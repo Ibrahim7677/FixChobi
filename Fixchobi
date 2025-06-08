@@ -1,0 +1,26 @@
+from fastapi import FastAPI, UploadFile, File
+from fastapi.responses import FileResponse
+import shutil
+import os
+
+app = FastAPI()
+
+UPLOAD_FOLDER = "uploads"
+OUTPUT_IMAGE = "output.jpg"
+
+# আপলোড ফোল্ডার না থাকলে বানাও
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+@app.post("/fix/")
+async def fix_image(file: UploadFile = File(...)):
+    input_path = os.path.join(UPLOAD_FOLDER, "input.jpg")
+    output_path = os.path.join(UPLOAD_FOLDER, OUTPUT_IMAGE)
+
+    # ইউজারের ফাইল সেভ করো
+    with open(input_path, "wb") as f:
+        shutil.copyfileobj(file.file, f)
+
+    # এখন শুধু কপি করবো — পরে এখানে GFPGAN যুক্ত হবে
+    shutil.copy(input_path, output_path)
+
+    return FileResponse(output_path, media_type="image/jpeg")
